@@ -646,8 +646,11 @@ def main():
     source_from_AnnoMI.construct_conversation_dataset()
     source_from_AnnoMI.construct_audio_dataset()
 
+    # Initialize the SourceFromYoutube object
     source_from_youtube = SourceFromYoutube('conversation.csv','audio.csv')
 
+    # Append the conversation text and audio of YouTube video to the existing conversation and audio datasets
+    # The parameter is the URL of the YouTube video
     source_from_youtube.append_youtube_video("https://www.youtube.com/watch?v=OcUqMQJiRz0")
 
 if __name__ == "__main__":
