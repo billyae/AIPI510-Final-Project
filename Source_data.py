@@ -31,6 +31,7 @@ class SourceFromYoutube:
 
         """
 
+        # Initialize the destination paths
         self.destination_transcript_path = destination_transcript_path
         self.destination_audio_path = destination_audio_path
 
@@ -161,11 +162,13 @@ class SourceFromYoutube:
         last_conversation_id = text_df['conversation_id'].max() if not text_df.empty else -1
         new_conversation_id = last_conversation_id + 1
         
+        # Get the last audio_id from the existing audio CSV
         last_audio_id = audio_df['conversation_id'].max() if not audio_df.empty else -1
         new_audio_id = last_audio_id + 1
 
         audio_path = f"audio_speaker/{new_audio_id}_speaker_audio"
 
+        # Download the full audio
         self.download_youtube_audio(video_url,audio_path)
 
         # Process each diarized segment
@@ -174,6 +177,7 @@ class SourceFromYoutube:
         audio_id = 0
         text_id = 0
 
+        # Load the speaker diarization pipeline
         diarization_pipeline =  Pipeline.from_pretrained(
                         "pyannote/speaker-diarization",
                         use_auth_token="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"
@@ -181,7 +185,7 @@ class SourceFromYoutube:
 
         diarization = diarization_pipeline(f"{audio_path}.wav")
 
-        # Fetch transcript
+        # Fetch full transcript
         transcript_text = self.fetch_youtube_transcript(video_url)
 
         for turn, _, speaker in diarization.itertracks(yield_label=True):
@@ -196,6 +200,7 @@ class SourceFromYoutube:
                 os.remove(f"{trimmed_audio_path}.wav")  # Delete the file
 
             else:
+                
                 # Append audio row
                 audio_rows.append({
                     "conversation_id": new_audio_id,
@@ -209,6 +214,7 @@ class SourceFromYoutube:
             audio_id += 1
         
         
+        # Merge with existing CSVs
         new_audio_df = pd.DataFrame(audio_rows)
         audio_df = pd.concat([audio_df, new_audio_df], ignore_index=True)
         audio_df.to_csv(self.destination_audio_path, index=False)
@@ -229,6 +235,7 @@ class SourceFromYoutube:
                     break
             return chunks
         
+        # If exceed the maximum length, Split the transcript into sentences
         if len(transcript_text) > 512:
             
             # Split text
@@ -236,6 +243,7 @@ class SourceFromYoutube:
 
             for chunk in chunks:
                 
+                # Split the chunk into sentences
                 sentences = sent_tokenize(chunk)
 
                 for sentence in sentences:
@@ -255,8 +263,10 @@ class SourceFromYoutube:
                     })
             
                     text_id += 1
-        else:
 
+        else:
+            
+            # Split the transcript into sentences
             sentences = sent_tokenize(transcript_text)
 
             for sentence in sentences:
@@ -280,7 +290,7 @@ class SourceFromYoutube:
         # Merge with existing CSVs
         new_text_df = pd.DataFrame(text_rows)
         
-
+        # Reset the conversation id 
         text_df = pd.concat([text_df, new_text_df], ignore_index=True)
         
         
@@ -314,7 +324,6 @@ class SourceFromYoutube:
             
             # Generate emotion prediction for the audio
 
-            
             res=self.voice_emotion_prediction_model.generate(
                 input=audio_path,
                 cache={},
@@ -628,14 +637,14 @@ def main():
     source_from_AnnoMI = SourceFromAnnoMI("https://raw.githubusercontent.com/uccollab/AnnoMI/refs/heads/main/AnnoMI-simple.csv",client_ids,therapist_ids,'conversation.csv','audio.csv')
 
     # Get the timestamps for the client and therapist
-    # source_from_AnnoMI.get_timestamps()
+    source_from_AnnoMI.get_timestamps()
 
     # Get the audio for the client and therapist to local
-    # source_from_AnnoMI.get_audio()
+    source_from_AnnoMI.get_audio()
 
     # Construct the conversation and audio datasets
-    # source_from_AnnoMI.construct_conversation_dataset()
-    # source_from_AnnoMI.construct_audio_dataset()
+    source_from_AnnoMI.construct_conversation_dataset()
+    source_from_AnnoMI.construct_audio_dataset()
 
     source_from_youtube = SourceFromYoutube('conversation.csv','audio.csv')
 
