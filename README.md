@@ -33,3 +33,7 @@ In addition, the scripts allow user to input a specific video url on youtube of 
        
 Each conversation text is labeled as the emotional status and score ( to what extent the conversation is related to this emotional status) and each conversation audio is labeled as the emotional status.    
 
+## Run the Unit Test
+
+```pytest```
+
