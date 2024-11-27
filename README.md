@@ -17,7 +17,7 @@
 
 ## Run the Code
 
-```pip install -r requirements.```
+```pip install -r requirements.txt```
 
 ```python Source_data.py```
 
