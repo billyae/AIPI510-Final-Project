@@ -8,7 +8,6 @@ from transformers import pipeline
 from funasr import AutoModel
 import re
 from pyannote.audio import Pipeline
-from youtube_transcript_api import YouTubeTranscriptApi
 import nltk
 from nltk.tokenize import sent_tokenize
 
@@ -61,7 +60,6 @@ class SourceFromYoutube:
         :return: Path to the saved audio file.
 
         """
-
 
         # Download the audio using yt-dlp
         ydl_opts = {
